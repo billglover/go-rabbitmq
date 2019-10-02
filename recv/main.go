@@ -1,10 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/streadway/amqp"
 )
+
+// Greeting is a simple Greeting
+type Greeting struct {
+	Text string `json:"text"`
+}
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -46,7 +52,10 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
+			g := new(Greeting)
+			err := json.Unmarshal(d.Body, g)
+			failOnError(err, "Failed to unmarshal greeting")
+			log.Printf("Received a message: %s", g.Text)
 		}
 	}()
 
